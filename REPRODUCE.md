@@ -103,7 +103,7 @@ Without Omarchy:
 ssh -N -L 127.0.0.1:8188:127.0.0.1:8188 -L 127.0.0.1:8080:127.0.0.1:8080 user@<vm-address>
 ```
 
-### 7. Install ComfyUI on the node (ready once comfyui-setup is public)
+### 7. Install ComfyUI on the node
 
 On the VM:
 
