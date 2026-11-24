@@ -1,0 +1,17 @@
+[Unit]
+Description=ComfyUI on GPU %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/comfyui-gpu/env
+Environment=PYTHONUNBUFFERED=1
+# Makes --cuda-device <i> match the index shown by nvidia-smi.
+Environment=CUDA_DEVICE_ORDER=PCI_BUS_ID
+ExecStart=%h/.local/bin/comfyui-gpu %i
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

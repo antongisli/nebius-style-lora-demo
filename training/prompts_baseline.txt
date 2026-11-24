@@ -1,0 +1,10 @@
+# Prompt-only baseline: the base model with no LoRA, given a written description of the style.
+# Same held-out items, seed and sampler as the sweep samples, so the comparison sheet shows
+# what the LoRA adds over a careful prompt. Rendered at step 0 by a one-step job.
+a treasure chest, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a sword, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a health potion power-up, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a shield with an emblem, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a glowing crystal key, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a hooded cloak outfit, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered
+a knight's helmet, flat vector icon, single uniform lime green (#DAFF33) outline with rounded corners, flat slightly lighter navy fills, solid dark navy blue (#052B42) background, no shading, no texture, no text, single object, centered

@@ -1,0 +1,10 @@
+# End-to-end test prompts: id|subject. None of these subjects are in dataset v1.
+# The driver builds the full prompt from E2E_TEMPLATE (see driver.py), so every variant gets the same text.
+chest|a treasure chest
+potion|a health potion bottle
+axe|a battle axe
+lantern|a magic lantern
+staff|a wizard staff with a crystal on top
+egg|a dragon egg on a small stand
+crown|a royal crown
+shield|a knight's round shield

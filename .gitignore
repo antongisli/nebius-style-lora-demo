@@ -1,0 +1,24 @@
+# Dataset images, model weights and generated outputs stay out of git
+dataset/
+*.safetensors
+*.ckpt
+*.pt
+outputs/
+recordings/
+
+# Secrets and local config
+.env
+.env.*
+*.pem
+
+# OS and editor files
+.DS_Store
+__pycache__/
+.venv/
+deploy.env
+training/generated/
+training/logs/
+results/
+
+# Raw talk art generations (talk/make_art.py gen); the chosen cut-outs live in talk/map/art/
+talk/art/

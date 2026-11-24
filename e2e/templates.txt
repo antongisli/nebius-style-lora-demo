@@ -1,0 +1,4 @@
+# Prompt templates for the end-to-end test: id|template, with {trigger} and {subject}. Select with TEMPLATE_IDS.
+default|{trigger}, {subject}, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+trim|{trigger}, {subject} with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+glow|{trigger}, {subject} with glowing lime green edges and accents, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background

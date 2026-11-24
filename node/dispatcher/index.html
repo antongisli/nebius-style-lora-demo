@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU grid</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #181b22; --line: #2a2f3a; --text: #e8eaf0; --muted: #8b93a5;
+    --ok: #3fb950; --down: #f85149; --busy: #d29922; --accent: #5b8cff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 system-ui, sans-serif; }
+  header { display: flex; gap: 16px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  #gpus { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; flex: 1; }
+  .gpu { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+  .gpu b { display: block; font-size: 14px; }
+  .gpu .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--muted); }
+  .gpu.up .dot { background: var(--ok); }
+  .gpu.busy .dot { background: var(--busy); }
+  .gpu.down { border-color: var(--down); }
+  .gpu.down .dot { background: var(--down); }
+  main { display: grid; grid-template-columns: 320px 1fr; gap: 16px; padding: 16px; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  form, #three { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  label { display: block; color: var(--muted); font-size: 13px; margin: 10px 0 4px; }
+  textarea, input[type=text], input[type=number] {
+    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line);
+    border-radius: 4px; padding: 6px 8px; font: inherit;
+  }
+  textarea { height: 140px; resize: vertical; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 4px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button.secondary { background: var(--line); }
+  button:disabled { opacity: .5; cursor: default; }
+  #msg { color: var(--down); min-height: 1.4em; margin-top: 8px; font-size: 13px; }
+  #grid section { margin-bottom: 18px; }
+  #grid h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+  .tile { position: relative; aspect-ratio: 1; background: var(--panel); border: 2px solid var(--line); border-radius: 6px; overflow: hidden; cursor: pointer; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 6px; background: rgba(0,0,0,.6); font-size: 12px; }
+  .tile .state { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; padding: 8px; }
+  .tile.error { border-color: var(--down); }
+  .tile.selected { border-color: var(--accent); }
+  #three { margin-top: 16px; }
+  #three h2 { font-size: 15px; margin: 0 0 8px; }
+  .job3d { padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>GPU grid</h1>
+  <div id="gpus"></div>
+</header>
+<main>
+  <div>
+    <form id="form">
+      <label for="prompts">Prompts, one per line</label>
+      <textarea id="prompts">a treasure chest
+a royal crown
+a battle axe</textarea>
+      <label for="suffix">Added to every prompt</label>
+      <input id="suffix" type="text" value="with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background">
+      <div class="row">
+        <div><label for="variants">Variants each</label><input id="variants" type="number" min="1" max="32" value="8"></div>
+        <div><label for="strength">Style strength</label><input id="strength" type="number" min="0" max="2" step="0.1" value="1.3"></div>
+      </div>
+      <label><input id="lora" type="checkbox" checked> Use the style LoRA <span id="lorainfo"></span></label>
+      <div class="row" style="margin-top:12px">
+        <button type="submit">Generate</button>
+        <button type="button" class="secondary" id="warmup" title="One job per GPU, to load the models">Warm up</button>
+        <button type="button" class="secondary" id="clear">Clear</button>
+      </div>
+      <div id="msg"></div>
+    </form>
+    <div id="three">
+      <h2>3D</h2>
+      <button type="button" id="make3d" disabled>Make 3D from selected image</button>
+      <div id="jobs3d"></div>
+    </div>
+  </div>
+  <div id="grid"></div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const colours = ['#5b8cff', '#3fb950', '#d29922', '#f85149', '#bc8cff', '#39c5cf', '#ff7b72', '#e3b341'];
+const tiles = new Map();
+const sections = new Map();
+let selected = null;
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+async function post(path, body) {
+  const resp = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body || {})});
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || resp.statusText);
+  return data;
+}
+
+function renderGpus(instances) {
+  const box = $('gpus');
+  instances.forEach((inst) => {
+    let card = box.children[inst.index];
+    if (!card) { card = el('div', 'gpu'); box.appendChild(card); }
+    const state = inst.up === false ? 'down' : inst.inflight ? 'busy' : inst.up ? 'up' : '';
+    card.className = 'gpu ' + state;
+    card.style.borderTop = `3px solid ${colours[inst.index % colours.length]}`;
+    card.title = inst.up === false ? inst.last_error : inst.device;
+    card.innerHTML = '';
+    const title = el('b');
+    title.append(el('span', 'dot'), `GPU ${inst.index}`);
+    card.append(title, el('span', '', inst.up === false ? 'down' : `${inst.inflight} active · ${inst.completed} done`));
+  });
+}
+
+function tileFor(job) {
+  let tile = tiles.get(job.id);
+  if (!tile) {
+    let section = sections.get(job.label);
+    if (!section) {
+      section = el('section');
+      section.append(el('h2', '', job.label), el('div', 'tiles'));
+      $('grid').prepend(section);
+      sections.set(job.label, section);
+    }
+    tile = el('div', 'tile');
+    tile.append(el('div', 'state'), el('div', 'info'));
+    tile.onclick = () => select(job.id, tile);
+    section.querySelector('.tiles').appendChild(tile);
+    tiles.set(job.id, tile);
+  }
+  return tile;
+}
+
+function renderJob(job) {
+  const tile = tileFor(job);
+  const key = `${job.status}|${job.instance}|${job.error}`;
+  if (tile.dataset.key === key) return;
+  tile.dataset.key = key;
+  tile.dataset.status = job.status;
+  const gpu = job.instance === null ? '' : `GPU ${job.instance}`;
+  tile.style.borderColor = job.instance === null ? '' : colours[job.instance % colours.length];
+  tile.classList.toggle('error', job.status === 'error');
+  const state = tile.querySelector('.state');
+  const info = tile.querySelector('.info');
+  if (job.status === 'done' && job.outputs.length) {
+    const img = el('img');
+    img.src = `/view?job=${encodeURIComponent(job.id)}&index=0`;
+    img.alt = job.label;
+    state.replaceWith(img);
+    info.textContent = `${gpu} · ${job.run_seconds ?? '?'} s`;
+  } else if (job.status === 'error') {
+    state.textContent = job.error;
+    info.textContent = gpu;
+  } else {
+    state.textContent = job.status === 'pending' ? (job.error ? `retrying: ${job.error}` : 'waiting') : job.status;
+    info.textContent = gpu;
+  }
+}
+
+function select(id, tile) {
+  tiles.forEach((t) => t.classList.remove('selected'));
+  const done = tile.dataset.status === 'done';
+  selected = done ? id : null;
+  if (done) tile.classList.add('selected');
+  $('make3d').disabled = !selected;
+}
+
+function render3d(jobs) {
+  const box = $('jobs3d');
+  box.innerHTML = '';
+  jobs.slice().reverse().forEach((job) => {
+    const row = el('div', 'job3d');
+    const gpu = job.instance === null ? '' : ` on GPU ${job.instance}`;
+    row.append(el('div', '', `${job.label}: ${job.status}${gpu}${job.run_seconds ? ` · ${job.run_seconds} s` : ''}`));
+    if (job.status === 'done') {
+      job.outputs.forEach((out, i) => {
+        const link = el('a', '', `Download ${out.filename}`);
+        link.href = `/view?job=${encodeURIComponent(job.id)}&index=${i}`;
+        link.download = out.filename;
+        row.appendChild(link);
+      });
+    } else if (job.status === 'error') {
+      row.appendChild(el('div', '', job.error));
+    }
+    box.appendChild(row);
+  });
+}
+
+async function refresh() {
+  try {
+    const state = await (await fetch('/api/state')).json();
+    renderGpus(state.instances);
+    const images = state.jobs.filter((j) => j.kind === 'image');
+    const ids = new Set(images.map((j) => j.id));
+    tiles.forEach((tile, id) => { if (!ids.has(id)) { tile.remove(); tiles.delete(id); } });
+    sections.forEach((section, label) => {
+      if (!section.querySelector('.tile')) { section.remove(); sections.delete(label); }
+    });
+    images.forEach(renderJob);
+    render3d(state.jobs.filter((j) => j.kind === '3d'));
+    const lora = state.lora;
+    $('lorainfo').textContent = lora.available === false ? `(${lora.name} not found on the node)` : `(${lora.name})`;
+  } catch (err) {
+    $('msg').textContent = 'grid page unreachable: ' + err.message;
+  }
+}
+
+$('form').onsubmit = async (event) => {
+  event.preventDefault();
+  $('msg').textContent = '';
+  try {
+    await post('/api/run', {
+      prompts: $('prompts').value.split('\n'),
+      suffix: $('suffix').value,
+      variants: Number($('variants').value),
+      lora: $('lora').checked,
+      strength: Number($('strength').value),
+    });
+    refresh();
+  } catch (err) { $('msg').textContent = err.message; }
+};
+$('warmup').onclick = () => post('/api/warmup', {lora: $('lora').checked, strength: Number($('strength').value)})
+  .then(refresh).catch((err) => { $('msg').textContent = err.message; });
+$('clear').onclick = () => post('/api/clear').then(refresh).catch((err) => { $('msg').textContent = err.message; });
+$('make3d').onclick = () => post('/api/3d', {job: selected, index: 0})
+  .then(refresh).catch((err) => { $('msg').textContent = err.message; });
+
+refresh();
+setInterval(refresh, 700);
+</script>
+</body>
+</html>

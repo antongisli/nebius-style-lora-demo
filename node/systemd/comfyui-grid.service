@@ -1,0 +1,15 @@
+[Unit]
+Description=Grid page that spreads ComfyUI jobs over all GPUs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/comfyui-gpu/env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 %h/.local/share/comfyui-grid/dispatcher/server.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

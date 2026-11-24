@@ -1,0 +1,11 @@
+# Sample prompts rendered at every checkpoint. {trigger} is replaced by sweep.py.
+# The same prompts and seed are used for every run, so contact sheets compare like with like.
+{trigger}, a treasure chest, single object, centered, plain background
+{trigger}, a sword, single object, centered, plain background
+{trigger}, a health potion power-up, single object, centered, plain background
+{trigger}, a shield with an emblem, single object, centered, plain background
+{trigger}, a glowing crystal key, single object, centered, plain background
+{trigger}, a server rack in a data center
+{trigger}, a hooded cloak outfit, single object, centered, plain background
+{trigger}, a knight's helmet, single object, centered, plain background
+a treasure chest, single object, centered, plain background

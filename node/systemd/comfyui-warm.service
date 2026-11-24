@@ -1,0 +1,15 @@
+[Unit]
+Description=Read the model files and load Qwen-Image once, so the first job is fast
+After=comfyui-gpu@0.service
+Wants=comfyui-gpu@0.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-%h/.config/comfyui-gpu/env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 %h/.local/bin/comfyui-warm
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=default.target

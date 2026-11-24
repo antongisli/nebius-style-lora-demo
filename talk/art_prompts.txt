@@ -1,0 +1,21 @@
+# id|subject: rendered with workflow 1 (nbsstyle, <subject> with lime green trim and details, 3D game asset, ...)
+# Map landmarks, one per journey stop (talk/journey.md)
+village|a small fantasy village with a quest notice board
+gate|a stone castle gate with a portcullis
+camp|a camping tent next to a campfire
+quarry|a stone quarry with a pickaxe and stacked painted tiles
+towers|eight small stone wizard towers standing in a row
+detour|a wooden signpost with arrows pointing in different directions
+forge|a blacksmith forge with an anvil and glowing coals
+bridge|a stone arch bridge
+swamp|a murky swamp monster made of dark navy blue slime
+synth|a magic crafting table with glowing crystals
+castle|a fortified castle with a glowing crystal on its tallest tower
+uncharted|a compass lying on a rolled up map
+# Slide images
+hero|a gaming laptop opening like a treasure chest with glowing crystals inside
+quest|a rolled parchment quest scroll with a wax seal
+gpu|a graphics card as a legendary RPG weapon
+coins|a leather coin pouch spilling gold coins
+crystalball|a wizard crystal ball with a tiny castle inside
+mimic|a treasure chest mimic monster covered in navy blue paint

@@ -1,0 +1,72 @@
+# ai-toolkit config template for the style LoRA sweep.
+# training/sweep.py fills the {{...}} placeholders and writes one config per run.
+# Based on ai-toolkit config/examples/train_lora_qwen_image_24gb.yaml, with the
+# 3-bit quantization and low_vram mode dropped because the jobs run on 80-96 GB GPUs.
+# Memory headroom at these settings is an estimate until the pilot run measures it.
+---
+job: extension
+config:
+  name: "{{name}}"
+  process:
+    - type: "sd_trainer"
+      training_folder: "/work/output"
+      device: cuda:0
+      network:
+        type: "lora"
+        linear: {{rank}}
+        linear_alpha: {{rank}}
+      save:
+        dtype: float16
+        save_every: {{save_every}}
+        max_step_saves_to_keep: 100
+      datasets:
+        # Captions are .txt files next to each image. The trigger word is written
+        # into every caption, because ai-toolkit does not insert it when text
+        # embeddings are cached.
+        - folder_path: "/work/dataset"
+          caption_ext: "txt"
+          caption_dropout_rate: 0.05
+          shuffle_tokens: false
+          cache_latents_to_disk: true
+          resolution: [512, 768, 1024]
+{{reg_dataset}}      train:
+        batch_size: {{batch_size}}
+        reg_weight: {{reg_weight}}  # loss weight of the regularization images, if any
+        cache_text_embeddings: true
+        steps: {{steps}}
+        gradient_accumulation: 1
+        train_unet: true
+        train_text_encoder: false
+        gradient_checkpointing: true
+        noise_scheduler: "flowmatch"
+        optimizer: "adamw8bit"
+        lr: {{lr}}
+        dtype: bf16
+        # "balanced" samples timesteps uniformly; "style" favours the later (low-noise) ones
+        content_or_style: "{{content_or_style}}"
+        ema_config:
+          use_ema: {{ema}}
+          ema_decay: 0.99
+      model:
+        name_or_path: "Qwen/Qwen-Image"
+        arch: "qwen_image"
+        quantize: {{quantize}}
+        qtype: "qfloat8"
+        quantize_te: true
+        qtype_te: "qfloat8"
+        low_vram: false
+      sample:
+        sampler: "flowmatch"
+        sample_every: {{save_every}}
+        sample_start_step: 0
+        width: 1024
+        height: 1024
+        prompts: {{prompts}}
+        neg: ""
+        seed: 42
+        walk_seed: false
+        guidance_scale: 3
+        sample_steps: 25
+meta:
+  name: "[name]"
+  version: "1.0"

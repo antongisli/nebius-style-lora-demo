@@ -1,0 +1,42 @@
+# Subjects for the synthetic trim dataset and the regularization images (e2e/make_trim_dataset.py).
+# None of them is a test subject (e2e/prompts.txt) or a sample-prompt subject (training/prompts.txt).
+barrel|a wooden barrel with iron bands
+anvil|a blacksmith's anvil
+map|a rolled treasure map
+bow|a wooden longbow
+hammer|a war hammer
+ring|a magic ring with a gemstone
+amulet|an amulet on a chain
+goblet|a jeweled goblet
+book|a leather-bound spellbook
+scroll|a magic scroll
+boots|a pair of leather boots
+gauntlet|an armored gauntlet
+torch|a wall torch
+candle|a candle holder with a lit candle
+coins|a bag of gold coins
+mushroom|a glowing mushroom
+pickaxe|a mining pickaxe
+spear|a hunting spear
+compass|a brass compass
+hourglass|an hourglass
+bell|a bronze bell
+drum|a war drum
+lute|a wooden lute
+cauldron|a witch's cauldron
+wand|a magic wand
+orb|a crystal orb on a stand
+banner|a castle banner on a pole
+gem|a large cut gemstone
+throne|a royal throne
+mace|a spiked mace
+bracer|a leather bracer
+quiver|a quiver of arrows
+crossbow|a crossbow
+telescope|a brass telescope
+cart|a wooden mine cart
+stool|a wooden stool
+backpack|an adventurer's backpack
+totem|a carved wooden totem
+trophy|a golden trophy cup
+clock|an ornate pocket watch

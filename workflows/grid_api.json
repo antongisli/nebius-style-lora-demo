@@ -1,0 +1,73 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "_meta": {"title": "Base model"},
+    "inputs": {"unet_name": "qwen_image_bf16.safetensors", "weight_dtype": "default"}
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "_meta": {"title": "Text encoder"},
+    "inputs": {"clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "type": "qwen_image", "device": "default"}
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "_meta": {"title": "VAE"},
+    "inputs": {"vae_name": "qwen_image_vae.safetensors"}
+  },
+  "4": {
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {"title": "Lightning LoRA"},
+    "inputs": {"model": ["1", 0], "lora_name": "Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors", "strength_model": 1.0}
+  },
+  "5": {
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {"title": "Style LoRA"},
+    "inputs": {"model": ["4", 0], "lora_name": "style.safetensors", "strength_model": 1.3}
+  },
+  "6": {
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {"title": "Model sampling"},
+    "inputs": {"model": ["5", 0], "shift": 3.1}
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "Prompt"},
+    "inputs": {"text": "nbsstyle, a treasure chest with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background", "clip": ["2", 0]}
+  },
+  "8": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "Negative"},
+    "inputs": {"text": "", "clip": ["2", 0]}
+  },
+  "9": {
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {"title": "Latent"},
+    "inputs": {"width": 1024, "height": 1024, "batch_size": 1}
+  },
+  "10": {
+    "class_type": "KSampler",
+    "_meta": {"title": "Sampler"},
+    "inputs": {
+      "model": ["6", 0],
+      "seed": 42,
+      "steps": 8,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "positive": ["7", 0],
+      "negative": ["8", 0],
+      "latent_image": ["9", 0],
+      "denoise": 1.0
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "_meta": {"title": "Decode"},
+    "inputs": {"samples": ["10", 0], "vae": ["3", 0]}
+  },
+  "12": {
+    "class_type": "SaveImage",
+    "_meta": {"title": "Save"},
+    "inputs": {"images": ["11", 0], "filename_prefix": "grid/ComfyUI"}
+  }
+}

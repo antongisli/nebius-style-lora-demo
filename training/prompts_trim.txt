@@ -1,0 +1,6 @@
+# Sample prompts for the trim LoRAs (dataset v3): the demo prompt on subjects outside every training set.
+{trigger}, a treasure chest with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+{trigger}, a royal crown with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+{trigger}, a wizard staff with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+{trigger}, a knight's round shield with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background
+a treasure chest with lime green trim and details, 3D game asset, stylized, soft studio lighting, single object, centered, plain white background

@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset=utf-8><meta name=viewport content="width=device-width"><title>capture</title>
+<script type=module src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>body { margin: 0; background: #fff; } model-viewer { width: 480px; height: 480px; background: #ffffff; }</style>
+<div id=stage></div>
+<pre id=status>waiting</pre>
+<script type=module>
+// One fresh <model-viewer> per GLB, so framing never carries over from the previous model.
+await customElements.whenDefined("model-viewer");
+// model-viewer lowers its render scale when frames are slow (large GLBs); snapshots then crop, so pin it at 1
+customElements.get("model-viewer").minimumRenderScale = 1;
+const stage = document.getElementById("stage"), status = document.getElementById("status");
+// ?only=<text> renders just the GLBs whose name contains it, e.g. ?only=-snap
+const only = new URLSearchParams(location.search).get("only");
+const names = (await (await fetch("glbs.txt")).text()).trim().split("\n").filter(n => !only || n.includes(only));
+for (const name of names) {
+  stage.replaceChildren();
+  const mv = document.createElement("model-viewer");
+  for (const [k, v] of Object.entries({ loading: "eager", "camera-orbit": "30deg 70deg auto", "shadow-intensity": "0.6",
+                                         exposure: "1.0", "tone-mapping": "neutral", "interaction-prompt": "none" })) mv.setAttribute(k, v);
+  const loaded = new Promise(resolve => mv.addEventListener("load", resolve, { once: true }));
+  mv.src = `3d/${name}.glb`;
+  stage.append(mv);
+  await loaded;
+  await new Promise(r => setTimeout(r, 1500));
+  const blob = await mv.toBlob({ mimeType: "image/png" });
+  await fetch(`/save/${name}.png`, { method: "POST", body: blob });
+  status.textContent += `\n${name}`;
+}
+status.textContent += "\nDONE";
+</script>
